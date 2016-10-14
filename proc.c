@@ -39,21 +39,28 @@ allocproc(void)
 	struct proc *p;
 	char *sp;
 
+	// Scan the proc table for a slot with state UNUSED
 	for (p = ptable.proc; p < &ptable.proc[NPROC]; p++)
 		if (p->state == UNUSED)
 			goto found;
+	// If none found, return 0 to signal failure
 	return 0;
 
 found:
+	// When an unused slot is found, set the state to EMBRYO
 	p->state = EMBRYO;
+	// Give the process a unique pid
 	p->pid = nextpid++;
 
-	// Allocate kernel stack
+	// Allocate kernel stack for process' kernel thread
 	if ((p->kstack = kalloc()) == 0)
 	{
+		// If allocation fails, change state back to UNUSED
 		p->state = UNUSED;
+		// Return 0 to signal failure
 		return 0;
 	}
+	// Specially prepare kernel stack and set of kernel registers
 	sp = p->kstack + KSTACKSIZE;
 
 	// Leave room for trap frame
@@ -64,7 +71,6 @@ found:
 	// which returns to trapret.
 	sp -= 4;
 	*(uint*)sp = (uint)trapret;
-
 	sp -= sizeof *p->context;
 	p->context = (struct context*)sp;
 	memset(p->context, 0, sizeof *p->context);
@@ -83,24 +89,44 @@ userinit(void)
 
 	acquire(&ptable.lock);
 
+	// Allocate a slot in the process table and initialize the parts
+	// of the process' state required for it's kernel thread to execute.
 	p = allocproc();
 	initproc = p;
+	// Create a page table for the first process, initially with
+	// mappings only for memory that the kernel uses.
 	if ((p->pgdir = setupkvm()) == 0)
 		panic("userinit: out of memory?");
+
+	// The inital contents of the first process' user-space memory are the
+	// compiled form of initcode.S; as part of the kernel build process, the
+	// linker embeds that binary in the kernel and defines two special
+	// symbols indicating the location and size of the binary:
+	//	_binary_initcode_start and _binary_initcode_size
+
+	// Copy that binary into the new process' memory by calling inituvm(),
+	// which allocates one page of physical memory, maps virtual address
+	// zero to that memory, and copies the binary to that page.
 	inituvm(p->pgdir, _binary_initcode_start, (int)_binary_initcode_size);
 	p->sz = PGSIZE;
+
+	// Set up the trap frame with the inital user mode state
 	memset(p->tf, 0 sizeof(*p->tf));
 	p->tf->cs = (SEG_UCODE << 3) | DPL_USER;
 	p->tf->ds = (SEG_UDATA << 3) | DPL_USER;
 	p->tf->es = p->tf->ds;
 	p->tf->ss = p->tf->ds;
 	p->tf->eflags = FL_IF;
+	// Set stack pointer to the process' largest valid virtual address
 	p->tf->esp = PGSIZE;
+	// Set instruction pointer to address zero
 	p->tf->eip = 0;			// beginning of initcode.S
 
+	// Set p->name to initcode, mainly for debugging
 	safestrcpy(p->name, "initcode", sizeof(p->name));
+	// Set the process' current working directory
 	p->cwd = namei("/");
-
+	// Mark the process available for scheduling
 	p->state = RUNNABLE;
 
 	release(&ptable.lock);
