@@ -321,6 +321,7 @@ wait(void)
 void
 scheduler(void)
 {
+	// Per-CPU variable
 	struct proc *p;
 
 	for ( ; ; )
@@ -328,7 +329,9 @@ scheduler(void)
 		// Enable interrupts on this processor
 		sti();
 
-		// Loop over process table looking for process to run
+		// Loop over process table looking for process to run;
+		// one with p->state set to RUNNABLE. Initially there
+		// is only one: initproc.
 		acquire(&ptable.lock);
 		for (p = ptable.proc; p < &ptable.proc[NPROC]; p++)
 		{
@@ -338,10 +341,35 @@ scheduler(void)
 			// Switch to chosen process. It is the process's job
 			// to release ptable.lock and then reacquire it
 			// before jumping back to us.
+
+			// Set proc to the process found
 			proc = p;
+			// Tell the hardware to start using the target
+			// process' page table. Also set up a task state
+			// segment, SEG_TSS, that instructs the hardware
+			// to execute system calls and interrupts on the
+			// process' kernel stack.
 			switchuvm(p);
+
+			// Set state, then perform a context switch to the target
+			// process' kernel thread.
 			p->state = RUNNING;
+			// swtch() first saves the current registers. The current
+			// context is not a process but rather a special per-cpu
+			// scheduler context, so we save the current registers in
+			// per-CPU storage (cpu->scheduler) rather than in any
+			// process' kernel thread context.
+			// swtch() then loads the saved registers of the target
+			// kernel thread (p->context) into the x86 hardware
+			// registers, including the stack and instruction pointers.
+			// The final ret instruction pops the target process' %eip
+			// from the stack, finishing the context switch.
 			swtch(&cpu->scheduler, p->context);
+			// Now the processor is running on the kernel stack of process p,
+			// which will start executing forkret().
+
+			// Switch hardware page table register to the kernel-only
+			// page table, for when no process is running.
 			switchkvm();
 
 			// Process is done running for now.
