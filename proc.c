@@ -75,6 +75,10 @@ found:
 	p->context = (struct context*)sp;
 	memset(p->context, 0, sizeof *p->context);
 	p->context->eip = (uint)forkret;
+	// One p->context is popped off, the top word on
+	// the stack will be trapret, which will have
+	// %esp set to p->tf
+
 
 	return p;
 }
@@ -430,12 +434,17 @@ forkret(void)
 	{
 		// Some initialization functions must be run in the
 		// context of a regular process (e.g. they call sleep),
-		// and thus cannot be run from main().
+		// with it's own kernel stack, and thus cannot be run
+		// from main().
 		first = 0;
 		iinit(ROOTDEV);
 		initlog(ROOTDEV);
 	}
 	// Return to "caller", actually trapret()
+	// This is because allocproc() arranged that the
+	// top word on the stack after p->context is popped
+	// off would be 'trapret', so now trapret() begins
+	// executing with %esp set to p->tf
 	//	(see allocproc)
 }
 
