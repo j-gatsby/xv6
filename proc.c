@@ -82,7 +82,6 @@ found:
 	// the stack will be trapret, which will have
 	// %esp set to p->tf
 
-
 	return p;
 }
 
@@ -125,9 +124,11 @@ userinit(void)
 	// registers, such as %cr3. This constrains the process to
 	// using only it's own memory.
 	p->tf->cs = (SEG_UCODE << 3) | DPL_USER;
+	// %ds, %es, and %ss use SEG_UDATA with privilege level DPL_USER
 	p->tf->ds = (SEG_UDATA << 3) | DPL_USER;
 	p->tf->es = p->tf->ds;
 	p->tf->ss = p->tf->ds;
+	// %eflags FL_IF bit is set to allow hardware interrupts
 	p->tf->eflags = FL_IF;
 	// Set stack pointer to the process' largest valid virtual address
 	p->tf->esp = PGSIZE;
@@ -146,7 +147,9 @@ userinit(void)
 	safestrcpy(p->name, "initcode", sizeof(p->name));
 	// Set the process' current working directory
 	p->cwd = namei("/");
-	// Mark the process available for scheduling
+
+	// The process is now initialized, so we
+	// can now mark it available for scheduling.
 	p->state = RUNNABLE;
 
 	release(&ptable.lock);
@@ -352,6 +355,11 @@ scheduler(void)
 		// Loop over process table looking for process to run;
 		// one with p->state set to RUNNABLE. Initially there
 		// is only one: initproc.
+		// TODO:	although I have not seen anything about it,
+		//			I would imagine that this should be more along
+		//			the lines of an explicit free list. Something
+		//			O(1), not O(n). At least it should be after
+		//			the initial run.
 		acquire(&ptable.lock);
 		for (p = ptable.proc; p < &ptable.proc[NPROC]; p++)
 		{
