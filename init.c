@@ -1,4 +1,10 @@
-// init: The initial user-level program
+// init: The initial user-level program.
+// Called by an exec() system call in initcode.S.
+// Creates a new console device file, if needed,
+// and then opens it as file descriptors 0, 1, and 2.
+// Then it loops, starting a console shell, handles
+// orphaned zombies until the shell exits, and repeats.
+// The system is up!
 
 #include "types.h"
 #include "stat.h"
