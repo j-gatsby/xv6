@@ -40,6 +40,9 @@ allocproc(void)
 	char *sp;
 
 	// Scan the proc table for a slot with state UNUSED
+	// TODO:	a real os would find free proc structs with
+	//			an explicit free list, in constant time,
+	//			instead of a linear-time search like this.
 	for (p = ptable.proc; p < &ptable.proc[NPROC]; p++)
 		if (p->state == UNUSED)
 			goto found;
