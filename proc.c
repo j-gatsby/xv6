@@ -116,6 +116,11 @@ userinit(void)
 
 	// Set up the trap frame with the inital user mode state
 	memset(p->tf, 0 sizeof(*p->tf));
+	// Set up the low bits of %cs to run the process' user code
+	// at CPL=3. Consequently, the user code can only use pages
+	// with PTE_U set, and cannot modify sensitive hardware
+	// registers, such as %cr3. This constrains the process to
+	// using only it's own memory.
 	p->tf->cs = (SEG_UCODE << 3) | DPL_USER;
 	p->tf->ds = (SEG_UDATA << 3) | DPL_USER;
 	p->tf->es = p->tf->ds;
@@ -125,6 +130,14 @@ userinit(void)
 	p->tf->esp = PGSIZE;
 	// Set instruction pointer to address zero
 	p->tf->eip = 0;			// beginning of initcode.S
+
+	// At this point, %eip holds 0, and %esp holds 4096 (PGSIZE).
+	// These are the virtual addresses int the process' address space.
+	// The processor's paging hardware translates them into physical
+	// addresses. allocuvm() has set up the process' page table so
+	// that virtual address 0 refers to the physical memory allocated
+	// for this process, and set a flag (PTE_U) that tells the paging
+	// hardware to allow user code to access that memory.
 
 	// Set p->name to initcode, mainly for debugging
 	safestrcpy(p->name, "initcode", sizeof(p->name));
