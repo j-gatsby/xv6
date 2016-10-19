@@ -50,7 +50,7 @@ binit(void)
 	for (b = bcache.buf; b < bcache.buf+NBUF; b++)
 	{
 		b->next = bcache.head.next;
-		b->prev = bcache.head;
+		b->prev = &bcache.head;
 		b->dev = -1;
 		bcache.head.next->prev = b;
 		bcache.head.next = b;
@@ -70,7 +70,7 @@ bget(uint dev, uint blockno)
 
 loop:
 	// Is the block already cached?
-	for (b = bcache.head.next; b != bcache.head; b = b->next)
+	for (b = bcache.head.next; b != &bcache.head; b = b->next)
 	{
 		if (b->dev == dev && b->blockno == blockno)
 		{

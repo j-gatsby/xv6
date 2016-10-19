@@ -329,7 +329,7 @@ ilock(struct inode *ip)
 void
 iunlock(struct inode *ip)
 {
-	if (ip == 0 || !(ip->flags & I_BUSY) || ip-ref < 1)
+	if (ip == 0 || !(ip->flags & I_BUSY) || ip->ref < 1)
 		panic("iunlock");
 
 	acquire(&icache.lock);
@@ -399,7 +399,7 @@ bmap(struct inode *ip, uint bn)
 
 	if (bn < NDIRECT)
 	{
-		if ((addr = ip->addrs[bn] == 0)
+		if ((addr = ip->addrs[bn]) == 0)
 			ip->addrs[bn] = addr = balloc(ip->dev);
 
 		return addr;
@@ -410,7 +410,7 @@ bmap(struct inode *ip, uint bn)
 	{
 		// Load indirect block, allocating, if necessary.
 		if ((addr = ip->addrs[NDIRECT]) == 0)
-			ip->adds[NDIRECT] = addr = balloc(ip->dev);
+			ip->addrs[NDIRECT] = addr = balloc(ip->dev);
 
 		bp = bread(ip->dev, addr);
 		a = (uint*)bp->data;
@@ -419,7 +419,7 @@ bmap(struct inode *ip, uint bn)
 			a[bn] = addr = balloc(ip->dev);
 			log_write(bp);
 		}
-		brelese(bp);
+		brelse(bp);
 		return addr;
 	}
 	panic("bmap: out of range");
@@ -462,7 +462,7 @@ itrunc(struct inode *ip)
 	}
 
 	ip->size = 0;
-	iupdate(p);
+	iupdate(ip);
 }
 
 

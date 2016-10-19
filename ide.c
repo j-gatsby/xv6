@@ -56,7 +56,7 @@ ideinit(void)
 
 	initlock(&idelock, "ide");
 	picenable(IRQ_IDE);
-	iopicenable(IRQ_IDE, ncpu - 1);
+	ioapicenable(IRQ_IDE, ncpu - 1);
 	idewait(0);
 
 	// Check if disk 1 is present
@@ -98,12 +98,12 @@ idestart(struct buf *b)
 	outb(0x1f3, sector & 0xff);
 	outb(0x1f4, (sector >> 8) & 0xff);
 	outb(0x1f5, (sector >> 16) & 0xff);
-	outb(0x1f6, 0xe0 | ((b->dev&1)<<4) | ((sector>>24&0x0f));
+	outb(0x1f6, 0xe0 | ((b->dev&1)<<4) | (sector>>24&0x0f));
 
 	if (b->flags & B_DIRTY)
 	{
 		outb(0x1f7, write_cmd);
-		outb(0x1f0, b->data, BSIZE/4);
+		outsl(0x1f0, b->data, BSIZE/4);
 	}
 	else
 	{
@@ -151,7 +151,7 @@ ideintr(void)
 void
 iderw(struct buf *b)
 {
-	struct buf *pp;
+	struct buf **pp;
 
 	if (!(b->flags & B_BUSY))
 		panic("iderw: buf not busy");

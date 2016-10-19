@@ -13,7 +13,7 @@ static inline void
 insl(int port, void *addr, int cnt)
 {
 	asm volatile("cld: rep insl" :
-				"=D" (addr), "-c" (cnt) :
+				"=D" (addr), "=c" (cnt) :
 				"d" (port), "0" (addr), "1" (cnt) :
 				"memory", "cc");
 }

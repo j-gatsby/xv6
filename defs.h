@@ -17,7 +17,7 @@ void			bwrite(struct buf*);
 
 // console.c
 void			consoleinit(void);
-void			cprint(char*, ...);
+void			cprintf(char*, ...);
 void			consoleintr(int(*)(void));
 void			panic(char*) __attribute__((noreturn));
 
@@ -36,7 +36,7 @@ int				filewrite(struct file*, char*, int n);
 // fs.c
 void			readsb(int dev, struct superblock *sb);
 int				dirlink(struct inode*, char*, uint);
-struct inode*	dirlookup(struct indode*, char*, uint);
+struct inode*	dirlookup(struct inode*, char*, uint*);
 struct inode*	ialloc(uint, short);
 struct inode*	idup(struct inode*);
 void			iinit(int dev);
@@ -44,7 +44,7 @@ void			ilock(struct inode*);
 void			iput(struct inode*);
 void			iunlock(struct inode*);
 void			iunlockput(struct inode*);
-void			iupdate(stuct inode*);
+void			iupdate(struct inode*);
 int				namecmp(const char*, const char*);
 struct inode*	namei(char*);
 struct inode*	nameiparent(char*, char*);
@@ -58,7 +58,7 @@ void			ideintr(void);
 void			iderw(struct buf*);
 
 // ioapic.c
-void			iopicenable(int irq, int cpu);
+void			ioapicenable(int irq, int cpu);
 extern uchar	ioapicid;
 void			ioapicinit(void);
 
@@ -94,6 +94,56 @@ void			mpinit(void);
 void			picenable(int);
 void			picinit(void);
 
+// pipe.c
+int				pipealloc(struct file**, struct file**);
+void			pipeclose(struct pipe*, int);
+int				piperead(struct pipe*, char*, int);
+int				pipewrite(struct pipe*, char*, int);
+
+// proc.c
+void			exit(void);
+int				fork(void);
+int				growproc(int);
+int				kill(int);
+void			pinit(void);
+void			procdump(void);
+void			scheduler(void) __attribute__((noreturn));
+void			sched(void);
+void			sleep(void*, struct spinlock*);
+void			userinit(void);
+int				wait(void);
+void			wakeup(void*);
+void			yield(void);
+
+// swtch.S
+void			swtch(struct context**, struct context*);
+
+// spinlock.c
+void			acquire(struct spinlock*);
+void			getcallerpcs(void*, uint*);
+int				holding(struct spinlock*);
+void			initlock(struct spinlock*, char*);
+void			release(struct spinlock*);
+void			pushcli(void);
+void			popcli(void);
+
+// string.c
+int				memcmp(const void*, const void*, uint);
+void*			memmove(void*, const void*, uint);
+void*			memset(void*, int, uint);
+char*			safestrcpy(char*, const char*, int);
+int				strlen(const char*);
+int				strncmp(const char*, const char*, uint);
+char*			strncpy(char*, const char*, int);
+
+// syscall.c
+int				argint(int, int*);
+int				argptr(int, char**, int);
+int				argstr(int, char**);
+int				fetchint(uint, int*);
+int				fetchstr(uint, char**);
+void			syscall(void);
+
 // timer.c
 void			timerinit(void);
 
@@ -113,7 +163,7 @@ void			seginit(void);
 void			kvmalloc(void);
 pde_t*			setupkvm(void);
 char*			uva2ka(pde_t*, char*);
-int				alllocuvm(pde_t*, uint, uint);
+int				allocuvm(pde_t*, uint, uint);
 int				deallocuvm(pde_t*, uint, uint);
 void			freevm(pde_t*);
 void			inituvm(pde_t*, char*, uint);

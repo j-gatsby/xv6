@@ -88,7 +88,7 @@ cprintf(char *fmt, ...)
 
 			case 'x':
 			case 'p':
-					printint(*aprg++, 16, 0);
+					printint(*argp++, 16, 0);
 					break;
 
 			case 's':
@@ -169,7 +169,7 @@ cgaputc(int c)
 	if ((pos/80) >= 24)
 	{
 		// Scroll up
-		memmove(crt, crt+80, sizeof(crt[0]*23*80);
+		memmove(crt, crt+80, sizeof(crt[0]*23*80));
 		pos -= 80;
 		memset(crt+pos, 0, sizeof(crt[0])*(24*80 - pos));
 	}
@@ -178,7 +178,7 @@ cgaputc(int c)
 	outb(CRTPORT+1, pos>>8);
 	outb(CRTPORT, 15);
 	outb(CRTPORT+1, pos);
-	crt[pos] = ' ' | 0x0700
+	crt[pos] = ' ' | 0x0700;
 }
 
 

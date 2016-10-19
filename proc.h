@@ -27,7 +27,7 @@ extern int ncpu;
 // are implemented in thread libraries, such as
 // Linux pthreads.
 extern struct cpu *cpu asm("%gs:0");			// &cpus[cpunum()]
-extern struct proc *proc asm("%gs:4);			// cpus[cpunum()].proc
+extern struct proc *proc asm("%gs:4");			// cpus[cpunum()].proc
 
 
 // Saved registers for kernel context switches.
