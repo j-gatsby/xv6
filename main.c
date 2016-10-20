@@ -18,7 +18,13 @@ int
 main(void)
 {
 	kinit1(end, P2V(4*1024*1024));				// physical page allocator
+
+	// The page table created by 'entry' has enough mappings to allow the
+	// kernel's C code to start running. However, we change to a new page
+	// table here, in order to carry out a more elaborate plan for
+	// describing process address space.
 	kvmalloc();			// kernel page table
+
 	mpinit();			// detect other processors
 	lapicinit();		// interrupt controller
 	seginit();			// segment descriptors

@@ -49,29 +49,41 @@ walkpgdir(pde_t *pgdir, const void *va, int alloc)
 	pde_t *pde;
 	pde_t *pgtab;
 
+	// We mimic the actions of the x86 paging hardware
+	// as we look up the PTE for a virtual address by
+	// using the upper 10 bits of the virtual address
+	// to find the page directory entry.
 	pde = &pgdir[PDX(va)];
+
+	// Is the page directory entry present?
 	if (*pde & PTE_P)
 	{
 		pgtab = (pde_t*)P2V(PTE_ADDR(*pde));
 	}
+	// If not, then the required page table page
+	// has not yet been allocated.
 	else
 	{
+		// If the alloc argument is set, allocate it.
 		if (!alloc || (pgtab = (pde_t*)kalloc()) == 0)
 			return 0;
-		// Make sur all of those PTE_P bits are zero
+		// Make sure all of those PTE_P bits are zero
 		memset(pgtab, 0, PGSIZE);
+		// Put the physical address in the page directory.
 		// The permissions here are overly generous, but
 		// they can be further restricted by the permissions
 		// in the page table entries, if necessary.
 		*pde = V2P(pgtab) | PTE_P | PTE_W | PTE_U;
 	}
+	// Use the next 10 bits of the virtual address to find
+	// the address of the PTE in the page table page.
 	return &pgtab[PTX(va)];
 }
 
 
 // Create PTEs for virtual addresses, starting at va, that
-// refer to physical addresses, starting at pa. va and size
-// might not be page aligned.
+// refer to physical addresses, starting at pa.
+// va and size might not be page aligned.
 static int
 mappages(pde_t *pgdir, void *va, uint size, uint pa, int perm)
 {
@@ -81,12 +93,24 @@ mappages(pde_t *pgdir, void *va, uint size, uint pa, int perm)
 	a = (char*)PGROUNDDOWN(uint)va);
 	last = (char*)PGROUNDDOWN(((uint)va) + size - 1);
 
+	// Install mappings into a page table for a range
+	// of virtual addresses to a corresponding range
+	// of physical addresses. It does this separately
+	// for each virtual address in the range, at
+	// page intervals.
 	for ( ; ; )
 	{
+		// For each address to be mapped, call
+		// walkpgdir to find the address of the
+		// PTE for that address.
 		if ((pte = walkpgdir(pgdir, a, 1)) == 0)
 			return -1;
 		if(*pte & PTE_P)
 			panic("remap");
+		// Initialize the PTE to hold the relevant
+		// physical page number, the desired permissions
+		// (PTE_W and/or PTE_U), and PTE_P to mark the
+		// PTE as valid
 		*pte = pa | perm | PTE_P;
 		if (a == last)
 			break;
@@ -140,18 +164,29 @@ static struct kmap {
 };
 
 
-// Set up the kernel part of a page table
+// Set up the kernel part of a page table.
+// Does NOT install any mappings for the
+// user memory.
 pde_t*
 setupkvm(void)
 {
 	pde_t *pgdir;
 	struct kmap *k;
 
+	// Allocate a page of memory to
+	// hold the page directory.
 	if ((pgdir = (pde_t*)kalloc()) == 0)
 		return 0;
 	memset(pgdir, 0, PGSIZE);
 	if (P2V(PHYSTOP) > (void*)DEVSPACE)
 		panic("PHYSTOP too high");
+
+	// Call mappages() to install the translations
+	// that the kernel needs, which are described
+	// in the kmap array. These include the kernel's
+	// instructions and data, physical memory up to
+	// PHYSTOP, and memory ranges which are actually
+	// I/O devices.
 	for (k = kmap; k < &kmap[NELEM(kmap)]; k++)
 		if (mappages(pgdir, k->virt, k->phys_end - k->phys_start,
 						(uint)k->phys_start, k->perm) < 0)
@@ -163,10 +198,14 @@ setupkvm(void)
 
 // Allocate one page table for the machine, for the kernel
 // address space needed by the scheduler process.
+// Creates and switches to a page table with the mappings
+// above KERNBASE required for the kernel to run.
 void
 kvmalloc(void)
 {
+	// Most of the work happens here
 	kpgdir = setupkvm();
+
 	switchkvm();
 }
 
