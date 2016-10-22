@@ -457,7 +457,7 @@ copyout(pde_t *pgdir, uint va, void *p, uint len)
 		if (pa0 == 0)
 			return -1;
 		n = PGSIZE - (va - va0);
-		if (n < len)
+		if (n > len)
 			n = len;
 		memmove(pa0 + (va - va0), buf, n);
 		len -= n;
