@@ -36,7 +36,7 @@ printint(int fd, int xx, int base, int sgn)
 		buf[i++] = '-';
 
 	while (--i >= 0)
-		putc(fd, buf[i]));
+		putc(fd, buf[i]);
 }
 
 
@@ -74,7 +74,7 @@ printf(int fd, char *fmt, ...)
 			}
 			else if (c == 'x' || c == 'p')
 			{
-				printint(fd, *ap, 16, 0)
+				printint(fd, *ap, 16, 0);
 				ap++;
 			}
 			else if (c == 's')

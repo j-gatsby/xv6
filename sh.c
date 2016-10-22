@@ -111,9 +111,9 @@ runcmd(struct cmd *cmd)
 					close(p[1]);
 					runcmd(pcmd->left);
 				}
-				if (fork1() == 0
+				if (fork1() == 0)
 				{
-					close[0];
+					close(0);
 					dup(p[0]);
 					close(p[0]);
 					close(p[1]);
@@ -240,7 +240,7 @@ pipecmd(struct cmd *left, struct cmd *right)
 	struct pipecmd *cmd;
 
 	cmd = malloc(sizeof(*cmd));
-	memset(cmd, 0, sizeof(*cmd);
+	memset(cmd, 0, sizeof(*cmd));
 	cmd->type = PIPE;
 	cmd->left = left;
 	cmd->right = right;
@@ -322,7 +322,7 @@ gettoken(char **ps, char *es, char **q, char **eq)
 	if (eq)
 		*eq = s;
 
-	while (s < es && strchr(whitespace, *s)
+	while (s < es && strchr(whitespace, *s))
 		s++;
 	*ps = s;
 	return ret;
@@ -410,7 +410,8 @@ parsedirs(struct cmd *cmd, char **ps, char *es)
 
 	while (peek(ps, es, "<>"))
 	{
-		tok = gettoken(ps, es, &q, &eq) != 'a')
+		tok = gettoken(ps, es, 0, 0);
+		if (gettoken(ps, es, &q, &eq) != 'a')
 			panic("missing file for redirection");
 		switch(tok)
 		{

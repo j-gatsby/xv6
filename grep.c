@@ -8,13 +8,13 @@ char buf[1024];
 int match(char*, char*);
 
 void
-grep(char *pattern, int fd);
+grep(char *pattern, int fd)
 {
 	int n, m;
 	char *p, *q;
 
 	m = 0;
-	while ((n = read(fd, buf + m, sizeof(buf) - m - 1)) > 0)
+	while ( (n = read(fd, buf + m, sizeof(buf) - m - 1) ) > 0)
 	{
 		m += n;
 		buf[m] = '\0';
@@ -102,7 +102,7 @@ int matchhere(char *re, char *text)
 		return 1;
 	if (re[1] == '*')
 		return matchstar(re[0], re + 2, text);
-	if (re[0] == '$' && re[1] == '\0'
+	if (re[0] == '$' && re[1] == '\0')
 		return *text == '\0';
 	if (*text != '\0' && (re[0] == '.' || re[0] == *text))
 		return matchhere(re + 1, text + 1);
