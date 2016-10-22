@@ -63,8 +63,11 @@ release(struct spinlock *lk)
 	// NOT re-order.
 	__sync_synchronize();
 
-	// Release the lock
-	lk->locked = 0;
+	// Release the lock, equivalent to lk->locked = 0;
+	// This code cannot use a C assignment, since it
+	// might not be atomic (and it isn't).
+	// TODO: A real OS would use C atomics here.
+	asm volatile("movl $0, %0" : "+m" (lk->locked) : );
 
 	popcli();
 }
