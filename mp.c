@@ -68,7 +68,7 @@ mpsearch(void)
 		if ((mp = mpsearch1(p - 1024, 1024)))
 		return mp;
 	}
-	return mpsearch1(0xF0000, 0x100000);
+	return mpsearch1(0xF0000, 0x10000);
 }
 
 
@@ -91,7 +91,7 @@ mpconfig(struct mp **pmp)
 		return 0;
 	if (conf->version != 1 && conf->version != 4)
 		return 0;
-	if ( sum((uchar*)conf, conf->length != 0) )
+	if ( sum((uchar*)conf, conf->length) != 0)
 		return 0;
 	*pmp = mp;
 	return conf;
