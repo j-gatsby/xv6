@@ -34,11 +34,11 @@ mpsearch1(uint a, int len)
 {
 	uchar *e, *p, *addr;
 
-	addr = (P2V(a);
+	addr = P2V(a);
 	e = addr + len;
 	for (p = addr; p < e; p+= sizeof(struct mp))
 		if (memcmp(p, "_MP_", 4) == 0 && sum(p, sizeof(struct mp)) == 0)
-			return (struct *mp)p;
+			return (struct mp*)p;
 	return 0;
 }
 
@@ -65,7 +65,7 @@ mpsearch(void)
 	else
 	{
 		p = ((bda[0x14]<<8) | bda[0x13])*1024;
-		if ((m = mpsearch1(p - 1024, 1024)))
+		if ((mp = mpsearch1(p - 1024, 1024)))
 		return mp;
 	}
 	return mpsearch1(0xF0000, 0x100000);
@@ -79,10 +79,10 @@ mpsearch(void)
 // the version.
 // TODO: check extended table checksum
 static struct mpconf*
-mpconfig(struct mp *pmp)
+mpconfig(struct mp **pmp)
 {
 	struct mpconf *conf;
-	struct mp *mp);
+	struct mp *mp;
 
 	if ((mp = mpsearch()) == 0 || mp->physaddr == 0)
 		return 0;
@@ -91,7 +91,7 @@ mpconfig(struct mp *pmp)
 		return 0;
 	if (conf->version != 1 && conf->version != 4)
 		return 0;
-	if (sum((uchar*)conf, conf->length != 0)
+	if ( sum((uchar*)conf, conf->length != 0) )
 		return 0;
 	*pmp = mp;
 	return conf;

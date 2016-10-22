@@ -38,7 +38,7 @@ main(void)
 	consoleinit();		// console hardware
 	uartinit();			// serial port
 	pinit();			// process table
-	tvinit()			// trap vectors
+	tvinit();			// trap vectors
 	binit();			// buffer cache
 	fileinit();			// file table
 	ideinit();			// disk
@@ -126,8 +126,8 @@ startothers(void)
 //		page boundaries, hence the __aligned__ attribute
 //	- PTE_PS in a page directory entry enables 4Mbyte pages
 
-__attribute___((__aligned__(PGSIZE)))
-pde_t entrypgdir[NPDENTERIES] = {
+__attribute__((__aligned__(PGSIZE)))
+pde_t entrypgdir[NPDENTRIES] = {
 	// Map VA's [0, 4MB) to PAs [0, 4MB)
 	[0] = (0) | PTE_P | PTE_W | PTE_PS,
 	// Map VA's [KERNBASE, KERNBASE+4MB) to PAs [0, 4MB)

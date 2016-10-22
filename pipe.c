@@ -33,16 +33,16 @@ pipealloc(struct file **f0, struct file **f1)
 	p->readopen = 1;
 	p->writeopen = 1;
 	p->nwrite = 0;
-	p->nread = 0
+	p->nread = 0;
 	initlock(&p->lock, "pipe");
-	(*fd0)->type = FD_PIPE;
-	(*fd0)->readable = 1;
-	(*fd0)->writable = 0;
-	(*fd0)->pipe = p;
-	(*fd1)->type = FD_PIPE;
-	(*fd1)->readable = 0;
-	(*fd1)->writable = 1;
-	(*fd1)->pipe = p;
+	(*f0)->type = FD_PIPE;
+	(*f0)->readable = 1;
+	(*f0)->writable = 0;
+	(*f0)->pipe = p;
+	(*f1)->type = FD_PIPE;
+	(*f1)->readable = 0;
+	(*f1)->writable = 1;
+	(*f1)->pipe = p;
 	return 0;
 
 bad:
@@ -68,7 +68,7 @@ pipeclose(struct pipe *p, int writable)
 	else
 	{
 		p->readopen = 0;
-		wakeup(&p-nwrite);
+		wakeup(&p->nwrite);
 	}
 
 	if (p->readopen == 0 && p->writeopen == 0)
@@ -99,7 +99,7 @@ pipewrite(struct pipe *p, char *addr, int n)
 			wakeup(&p->nread);
 			sleep(&p->nwrite, &p->lock);
 		}
-		p->data[p->nwrite++ % PIPESIZE] = addr[i]
+		p->data[p->nwrite++ % PIPESIZE] = addr[i];
 	}
 	wakeup(&p->nread);
 	release(&p->lock);

@@ -1,9 +1,9 @@
-#include ".h"
-#include ".h"
-#include ".h"
-#include ".h"
-#include ".h"
-#include ".h"
+#include "types.h"
+#include "defs.h"
+#include "param.h"
+#include "spinlock.h"
+#include "fs.h"
+#include "buf.h"
 
 // Simple logging that allows concurrent FS system calls.
 //
@@ -113,7 +113,8 @@ write_head(void)
 	struct buf *buf = bread(log.dev, log.start);
 	struct logheader *hb = (struct logheader *)(buf->data);
 	int i;
-	hb->n = log.lh.n; i++)
+	hb->n = log.lh.n;
+	for (i = 0; i < log.lh.n; i++)
 	{
 		hb->block[i] = log.lh.block[i];
 	}
@@ -143,7 +144,7 @@ begin_op(void)
 		{
 			sleep(&log, &log.lock);
 		}
-		else if (log.lh.n + (log.outstanding+1)*MAXOPBLOCK > LOGSIZE)
+		else if (log.lh.n + (log.outstanding+1)*MAXOPBLOCKS > LOGSIZE)
 		{
 			// this op might exhaust log space; wait for commit.
 			sleep(&log, &log.lock);
