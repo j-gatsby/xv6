@@ -142,7 +142,7 @@ sys_link(void)
 	}
 
 	ilock(ip);
-	if (ip->type == T_DIR
+	if (ip->type == T_DIR)
 	{
 		iunlockput(ip);
 		end_op();
@@ -221,13 +221,13 @@ sys_unlink(void)
 	if (namecmp(name, ".") == 0 || namecmp(name, "..") == 0)
 		goto bad;
 
-	if ((ip == dirlookup(dp, name, &off)) = 0)
+	if ((ip = dirlookup(dp, name, &off)) == 0)
 		goto bad;
 
-	if ((ip->type == T_DIR && !isdirempty(ip))
+	if ( ip->type == T_DIR && !isdirempty(ip) )
 	{
 		iunlockput(ip);
-		got bad;
+		goto bad;
 	}
 
 	memset(&de, 0, sizeof(de));
@@ -393,7 +393,7 @@ sys_mknod(void)
 	if ((argstr(0, &path)) < 0 ||
 		argint(1, &major) < 0 ||
 		argint(2, &minor) < 0 ||
-		(ip = create(path, T_DEV, major, minor)) = 0)
+		(ip = create(path, T_DEV, major, minor)) == 0)
 	{
 		end_op();
 		return -1;
@@ -412,7 +412,7 @@ sys_chdir(void)
 	struct inode *ip;
 
 	begin_op();
-	if (argstr(0, &path) < 0 || (ip = name(path)) == 0)
+	if (argstr(0, &path) < 0 || (ip = namei(path)) == 0)
 	{
 		end_op();
 		return -1;
@@ -428,7 +428,7 @@ sys_chdir(void)
 int
 sys_exec(void)
 {
-	char *path, *argv[MAXARGS];
+	char *path, *argv[MAXARG];
 	int i;
 	uint uargv, uarg;
 
@@ -442,7 +442,7 @@ sys_exec(void)
 	{
 		if (i >= NELEM(argv))
 			return -1;
-		if (fetchint(uargv + 4 * i), (int*)&uargv) < 0)
+		if (fetchint(uargv + 4 * i, (int*)&uarg) < 0)
 			return -1;
 		if (uarg == 0)
 		{

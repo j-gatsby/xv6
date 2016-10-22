@@ -42,7 +42,7 @@ seta20.2:
 	# transition.
 	lgdt	gdtdesc
 	movl	%cr0,%eax
-	orl		$CRO_PE, %eax
+	orl		$CR0_PE, %eax
 	movl	%eax, %cr0
 
 	# Complete the transition to 32-bit protected mode by using

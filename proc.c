@@ -117,7 +117,7 @@ userinit(void)
 	p->sz = PGSIZE;
 
 	// Set up the trap frame with the inital user mode state
-	memset(p->tf, 0 sizeof(*p->tf));
+	memset(p->tf, 0, sizeof(*p->tf));
 	// Set up the low bits of %cs to run the process' user code
 	// at CPL=3. Consequently, the user code can only use pages
 	// with PTE_U set, and cannot modify sensitive hardware
@@ -166,7 +166,7 @@ growproc(int n)
 	sz = proc->sz;
 	if (n > 0)
 	{
-		if ((sz = allocuvm(proc->pgdir, sz, sz + n)) = 0)
+		if ((sz = allocuvm(proc->pgdir, sz, sz + n)) == 0)
 			return -1;
 	}
 	else if (n < 0)
@@ -250,7 +250,7 @@ exit(void)
 	// Close all open files
 	for (fd = 0; fd < NOFILE; fd++)
 	{
-		if (proc->ofile[fd]
+		if (proc->ofile[fd])
 		{
 			fileclose(proc->ofile[fd]);
 			proc->ofile[fd] = 0;
@@ -272,7 +272,7 @@ exit(void)
 	{
 		if (p->parent == proc)
 		{
-			p->parent - initproc;
+			p->parent = initproc;
 			if (p->state == ZOMBIE)
 				wakeup1(initproc);
 		}
@@ -555,7 +555,7 @@ kill(int pid)
 			p->killed = 1;
 			// Wake process from sleep, if necessary
 			if (p->state == SLEEPING)
-				p->state == RUNNABLE;
+				p->state = RUNNABLE;
 			release(&ptable.lock);
 			return 0;
 		}

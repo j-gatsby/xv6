@@ -78,7 +78,7 @@ start32:
 	movw	$0x8a00, %ax
 	movw	%ax, %dx
 	outw	%ax, %dx
-	movw	$ox8ae0, %ax
+	movw	$0x8ae0, %ax
 	outw	%ax, %dx
 spin:
 	jmp		spin

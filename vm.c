@@ -90,7 +90,7 @@ mappages(pde_t *pgdir, void *va, uint size, uint pa, int perm)
 	char *a, *last;
 	pte_t *pte;
 
-	a = (char*)PGROUNDDOWN(uint)va);
+	a = (char*)PGROUNDDOWN((uint)va);
 	last = (char*)PGROUNDDOWN(((uint)va) + size - 1);
 
 	// Install mappings into a page table for a range
@@ -453,7 +453,7 @@ copyout(pde_t *pgdir, uint va, void *p, uint len)
 	while (len > 0)
 	{
 		va0 = (uint)PGROUNDDOWN(va);
-		pa0 = uva2ka(pgdir, (char*)va0;
+		pa0 = uva2ka(pgdir, (char*)va0);
 		if (pa0 == 0)
 			return -1;
 		n = PGSIZE - (va - va0);

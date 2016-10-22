@@ -1,4 +1,3 @@
-
 OBJS = \
 	bio.o\
 	console.o\
@@ -16,7 +15,6 @@ OBJS = \
 	picirq.o\
 	pipe.o\
 	proc.o\
-	sleeplock.o\
 	spinlock.o\
 	string.o\
 	swtch.o\
@@ -34,7 +32,7 @@ OBJS = \
 # TOOLPREFIX = i386-jos-elf
 
 # Using native tools (e.g., on X86 Linux)
-TOOLPREFIX = /usr/local/bin/i386-jos-elf-
+TOOLPREFIX =/usr/local/bin/i386-jos-elf-
 
 # Try to infer the correct TOOLPREFIX if not set
 ifndef TOOLPREFIX
@@ -81,7 +79,7 @@ CFLAGS = -fno-pic -static -fno-builtin -fno-strict-aliasing -O2 -Wall -MD -ggdb 
 CFLAGS += $(shell $(CC) -fno-stack-protector -E -x c /dev/null >/dev/null 2>&1 && echo -fno-stack-protector)
 ASFLAGS = -m32 -gdwarf-2 -Wa,-divide
 # FreeBSD ld wants ``elf_i386_fbsd''
-LDFLAGS += -m $(shell $(LD) -V | grep elf_i386 2>/dev/null | head -n 1)
+LDFLAGS += -m $(shell $(LD) -V | grep elf_i386 2>/dev/null)
 
 xv6.img: bootblock kernel fs.img
 	dd if=/dev/zero of=xv6.img count=10000

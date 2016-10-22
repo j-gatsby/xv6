@@ -47,14 +47,14 @@ _start = V2P_WO(entry)
 entry:
 	# Turn on page size extension for 4Mbyte pages
 	movl	%cr4, %eax
-	orl		$(CR4_PSE), %eax
+	orl	$(CR4_PSE), %eax
 	movl	%eax, %cr4
 	# Set page directory
 	movl	$(V2P_WO(entrypgdir)), %eax
 	movl	%eax, %cr3
 	# Turn on paging
 	movl	%cr0, %eax
-	orl		$(CR0_PG|CR0_WP), %eax
+	orl	$(CR0_PG|CR0_WP), %eax
 	movl	%eax, %cr0
 
 	# Set up the stack pointer
