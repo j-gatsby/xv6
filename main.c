@@ -17,13 +17,17 @@ extern char end[];	// first address after kernel loaded from ELF file
 int
 main(void)
 {
-	kinit1(end, P2V(4*1024*1024));				// physical page allocator
+	// Initialize the physical page allocator, at least partially.
+	// Right now main() cannot use locks or memory above 4Mb.
+	// Set up lock-less allocation in the first 4Mb.
+	kinit1(end, P2V(4*1024*1024));
 
-	// The page table created by 'entry' has enough mappings to allow the
-	// kernel's C code to start running. However, we change to a new page
-	// table here, in order to carry out a more elaborate plan for
+	// The page table created by 'entry' has enough mappings to
+	// allow the kernel's C code to start running. However,
+	// we now immediately change to a new kernel page table,
+	// in order to carry out a more elaborate plan for
 	// describing process address space.
-	kvmalloc();			// kernel page table
+	kvmalloc();
 
 	mpinit();			// detect other processors
 	lapicinit();		// interrupt controller
@@ -41,6 +45,14 @@ main(void)
 	if(!ismp)
 		timerinit();	// uniprocessor timer
 	startothers();		// start other processors
+
+	// main() can now use locks and memory above 4Mb.
+
+	// Enable locking and arrange for more memory to be allocatable.
+	// The physical allocator refers to physical pages by their
+	// virtual addresses, as mapped in high memory, not by their
+	// physical addresses, so P2V is used to translate PHYSTOP
+	// (a physical address) to a virtual address.
 	kinit2(P2V(4*1024*1024), P2V(PHYSTOP));		// must come after startothers()
 	userinit();			// first user process
 	mpmain();			// finish this processor's setup

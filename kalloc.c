@@ -33,12 +33,14 @@ kinit1(void *vstart, void *vend)
 {
 	initlock(&kmem.lock, "kmem");
 	kmem.use_lock = 0;
+	// Add memory to the free list
 	freerange(vstart, vend);
 }
 
 void
 kinit2(void *vstart, void *vend)
 {
+	// Add memory to the free list
 	freerange(vstart, vend);
 	kmem.use_lock = 1;
 }
@@ -48,8 +50,14 @@ void
 freerange(void *vstart, void *vend)
 {
 	char *p;
+	// A PTE can only refer to a physical address that
+	// is aligned on a 4096-byte boundary (is a multiple
+	// of 4096), so we use PGROUNDUP to ensure that we
+	// free only aligned physical addresses.
 	p = (char*)PGROUNDUP((uint)vstart);
+	// For each page...
 	for ( ; p + PGSIZE <= (char*)vend; p += PGSIZE)
+		// Add memory to the free list
 		kfree(p);
 }
 
@@ -67,14 +75,26 @@ kfree(char *v)
 	if ((uint)v % PGSIZE || v < end || V2P(v >= PHYSTOP)
 		panic("kfree");
 
-	// Fill with junk to catch dangling refs
+	// Fill with junk to catch dangling refs.
+	// Sets every byte in the memory being
+	// freed to the value 1. This will cause
+	// code that uses memory after freeing it
+	// (uses "dangling references") to read
+	// garbage instead of the old valid contents.
+	// Hopefully, this will cause such code to
+	// break faster.
 	memset(v, 1, PGSIZE);
 
 	if(kmem.use_lock)
 		acquire(&kmem.lock);
+
+	// Cast v to a pointer to a struct run
 	r = (struct run*)v;
+	// Record the old start of the free list
 	r->next = kmem.freelist;
+	// Set the free list equal to r
 	kmem.freelist = r;
+
 	if (kmem.use_lock)
 		release(&kmem.lock);
 }
@@ -90,11 +110,16 @@ kalloc(void)
 
 	if(kmem.use_lock)
 		acquire(&kmem.lock);
+	// Remove the first element in the free list
 	r = kmem.freelist;
+	// If successful, make the next element in the
+	// free list the new head of the list.
 	if (r)
 		kmem.freelist = r->next;
+
 	if (kmem.use_lock)
 		release(&kmem.lock);
+	// Return the element
 	return (char*)r;
 }
 
