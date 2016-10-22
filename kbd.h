@@ -58,9 +58,9 @@ static uchar normalmap[256] =
 	'7',	'8',	'9',	'0',	'-',	'=',	'\b',	'\t',
 	'q',	'w',	'e',	'r',	't',	'y',	'u',	'i',	// 0x10
 	'o',	'p',	'[',	']',	'\n',	NO,		'a',	's',
-	'd',	'f',	'g',	'h',	'j',	'k',	'l'.	';',	// 0x20
+	'd',	'f',	'g',	'h',	'j',	'k',	'l',	';',	// 0x20
 	'\'',	'`',	NO,		'\\',	'z',	'x',	'c',	'v',
-	'b',	'n',	'm',	',',	'.',	'/'.	NO,		'*',	// 0x30
+	'b',	'n',	'm',	',',	'.',	'/',	NO,		'*',	// 0x30
 	NO,		' ',	NO,		NO,		NO,		NO,		NO,		NO,
 	NO,		NO,		NO,		NO,		NO,		NO,		NO,		'7',	// 0x40
 	'8',	'9',	'-',	'4',	'5',	'6',	'+',	'1',
@@ -68,7 +68,7 @@ static uchar normalmap[256] =
 	[0x9C] '\n',		// KP_Enter
 	[0xB5] '/',			// KP_Div
 	[0xC8] KEY_UP,		[0xD0] KEY_DN,
-	[0xC9] KEY_PGUP,	[0x] KEY_PGDN,
+	[0xC9] KEY_PGUP,	[0xD1] KEY_PGDN,
 	[0xCB] KEY_LF,		[0xCD] KEY_RT,
 	[0x97] KEY_HOME,	[0xCF] KEY_END,
 	[0xD2] KEY_INS,		[0xD3] KEY_DEL

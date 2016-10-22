@@ -22,7 +22,7 @@
 #define ICRLO		(0x0300/4)			// Interrupt Command
 #define INIT		0x00000500			// INIT/RESET
 #define STARTUP		0x00000600			// Startup IPI
-#define DELVIS		0x00001000			// Delivery Status
+#define DELIVS		0x00001000			// Delivery Status
 #define ASSERT		0x00004000			// Assert interrupt (vs deassert)
 #define DEASSERT	0x00000000
 #define LEVEL		0x00008000			// Level triggered
@@ -33,7 +33,7 @@
 #define TIMER		(0x0320/4)			// Local Vector Table 0 (TIMER)
 #define X1			0x0000000B			// divide counts by 1
 #define PERIODIC	0x00020000			// Periodic
-#define PCINIT		(0x0340/4)			// Performance Counter LVT
+#define PCINT		(0x0340/4)			// Performance Counter LVT
 #define LINT0		(0x0350/4)			// Local Vector Table 1 (LINT0)
 #define LINT1		(0x0360/4)			// Local Vector Table 2 (LINT1)
 #define ERROR		(0x0370/4)			// Local Vector Table 3 (ERROR)
@@ -59,7 +59,7 @@ lapicinit(void)
 		return;
 
 	// Enable local APIC; set spurious interrupt vector.
-	lapicw(SVR, ENABLE | (T_IRQ + IRQ_SPURIOUS));
+	lapicw(SVR, ENABLE | (T_IRQ0 + IRQ_SPURIOUS));
 
 	// The timer repeatedly counts down at bus frequency
 	// from lapic[TICR] and then issues an interrupt.
