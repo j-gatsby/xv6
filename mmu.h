@@ -196,7 +196,7 @@ struct gatedesc {
 	uint off_15_0 : 16;		// Low 16 bits of offset in segment
 	uint cs : 16;			// Code segment selector
 	uint args : 5;			// Number of args, 0 for interrupt/trap gates
-	uint rsv1;				// Reserved (should be zero, I guess)
+	uint rsv1 : 3;			// Reserved (should be zero, I guess)
 	uint type : 4;			// type(STS_{TG,IG32,TG32})
 	uint s : 1;				// Must be zero (system)
 	uint dpl : 2;			// Descriptor (meaning new) Privilege Level
