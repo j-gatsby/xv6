@@ -5,6 +5,7 @@
 #include "param.h"
 #include "traps.h"
 #include "spinlock.h"
+#include "sleeplock.h"
 #include "fs.h"
 #include "file.h"
 #include "mmu.h"
@@ -69,7 +70,7 @@ uartgetc(void)
 {
 	if (!uart)
 		return -1;
-	if (!inb(COM1+5) & 0x01)
+	if (!(inb(COM1+5) & 0x01))
 		return -1;
 	return inb(COM1 + 0);
 }

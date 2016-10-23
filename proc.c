@@ -39,6 +39,8 @@ allocproc(void)
 	struct proc *p;
 	char *sp;
 
+	acquire(&ptable.lock);
+
 	// Scan the proc table for a slot with state UNUSED
 	// TODO:	a real os would find free proc structs with
 	//			an explicit free list, in constant time,
@@ -54,6 +56,8 @@ found:
 	p->state = EMBRYO;
 	// Give the process a unique pid
 	p->pid = nextpid++;
+
+	release(&ptable.lock);
 
 	// Allocate kernel stack for process' kernel thread
 	if ((p->kstack = kalloc()) == 0)
@@ -92,8 +96,6 @@ userinit(void)
 {
 	struct proc *p;
 	extern char _binary_initcode_start[], _binary_initcode_size[];
-
-	acquire(&ptable.lock);
 
 	// Allocate a slot in the process table and initialize the parts
 	// of the process' state required for it's kernel thread to execute.
@@ -148,6 +150,13 @@ userinit(void)
 	// Set the process' current working directory
 	p->cwd = namei("/");
 
+	// The following assignment to p->state (after acquire) lets
+	// other cores run this process. The acquire forces the above
+	// writes to be visible, and the lock is also needed because
+	// the assignment might not be atomic.
+	// TODO: if this is the same situation as elsewhere, a real OS
+	//			would import and use an atomic C function.
+	acquire(&ptable.lock);
 	// The process is now initialized, so we
 	// can now mark it available for scheduling.
 	p->state = RUNNABLE;
@@ -195,7 +204,6 @@ fork(void)
 	// Allocate process
 	if ((np = allocproc()) == 0)
 	{
-		release(&ptable.lock);
 		return -1;
 	}
 
@@ -205,7 +213,6 @@ fork(void)
 		kfree(np->kstack);
 		np->kstack = 0;
 		np->state = UNUSED;
-		release(&ptable.lock);
 		return -1;
 	}
 
@@ -226,6 +233,8 @@ fork(void)
 	safestrcpy(np->name, proc->name, sizeof(proc->name));
 
 	pid = np->pid;
+
+	acquire(&ptable.lock);
 
 	np->state = RUNNABLE;
 

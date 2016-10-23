@@ -20,7 +20,7 @@ struct mpconf {
 	uchar checksum;				// all bytes must add up to 0
 	uchar product[20];			// product id
 	uint *oemtable;				// OEM table pointer
-	uint oemlength;				// OEM table length
+	ushort oemlength;			// OEM table length
 	ushort entry;				// entry count
 	uint *lapicaddr;			// address of local APIC
 	ushort xlength;				// extended table length

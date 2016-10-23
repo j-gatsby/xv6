@@ -13,6 +13,8 @@
 #include "mmu.h"
 #include "proc.h"
 #include "fs.h"
+#include "spinlock.h"
+#include "sleeplock.h"
 #include "file.h"
 #include "fcntl.h"
 
@@ -223,7 +225,10 @@ sys_unlink(void)
 
 	if ((ip = dirlookup(dp, name, &off)) == 0)
 		goto bad;
+	ilock(ip);
 
+	if (ip->nlink < 1)
+		panic("unlink: nlink < 1");
 	if ( ip->type == T_DIR && !isdirempty(ip) )
 	{
 		iunlockput(ip);
@@ -414,6 +419,13 @@ sys_chdir(void)
 	begin_op();
 	if (argstr(0, &path) < 0 || (ip = namei(path)) == 0)
 	{
+		end_op();
+		return -1;
+	}
+	ilock(ip);
+	if (ip->type != T_DIR)
+	{
+		iunlockput(ip);
 		end_op();
 		return -1;
 	}
