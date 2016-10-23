@@ -14,7 +14,7 @@
 #define NUMLOCK			(1<<4)
 #define SCROLLLOCK		(1<<5)
 
-#define EOESC			(1<<6)
+#define E0ESC			(1<<6)
 
 // Special keycodes
 #define KEY_HOME		0xE0

@@ -19,21 +19,21 @@ kbdgetc(void)
 
 	if (data == 0xE0)
 	{
-		shift |= EOESC;
+		shift |= E0ESC;
 		return 0;
 	}
 	else if (data & 0x80)
 	{
 		// Key released
-		data = (shift & EOESC ? data : data & 0x7F);
-		shift &= (shiftcode[data] | EOESC);
+		data = (shift & E0ESC ? data : data & 0x7F);
+		shift &= (shiftcode[data] | E0ESC);
 		return 0;
 	}
-	else if (shift & EOESC)
+	else if (shift & E0ESC)
 	{
 		// Last character was an EO escape; or with 0x80
 		data |= 0x80;
-		shift &= ~EOESC;
+		shift &= ~E0ESC;
 	}
 
 	shift |= shiftcode[data];
