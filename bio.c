@@ -23,6 +23,7 @@
 #include "types.h"
 #include "defs.h"
 #include "param.h"
+#include "sleeplock.h"
 #include "spinlock.h"
 #include "fs.h"
 #include "buf.h"
@@ -51,7 +52,7 @@ binit(void)
 	{
 		b->next = bcache.head.next;
 		b->prev = &bcache.head;
-		b->dev = -1;
+		initsleeplock(&b->lock, "buffer");
 		bcache.head.next->prev = b;
 		bcache.head.next = b;
 	}
@@ -68,34 +69,31 @@ bget(uint dev, uint blockno)
 
 	acquire(&bcache.lock);
 
-loop:
 	// Is the block already cached?
 	for (b = bcache.head.next; b != &bcache.head; b = b->next)
 	{
 		if (b->dev == dev && b->blockno == blockno)
 		{
-			if (!(b->flags & B_BUSY))
-			{
-				b->flags |= B_BUSY;
-				release(&bcache.lock);
-				return b;
-			}
-			sleep(b, &bcache.lock);
-			goto loop;
+			b->refcnt++;
+			release(&bcache.lock);
+			acquiresleep(&b->lock);
+			return b;
 		}
 	}
 
 	// Not cached; recycle some non-busy and clean buffer.
-	//	- clean = B_DIRTY and !B_BUSY means log.c has not
+	//	- clean = B_DIRTY and not locked means log.c has not
 	//				yet committed the changes to the buffer
 	for (b = bcache.head.prev; b != &bcache.head; b = b->prev)
 	{
-		if ((b->flags & B_BUSY) == 0 && (b->flags & B_DIRTY) == 0)
+		if (b->refcnt == 0 && (b->flags & B_DIRTY) == 0)
 		{
 			b->dev = dev;
 			b->blockno = blockno;
-			b->flags = B_BUSY;
+			b->flags = 0;
+			b->refcnt = 1;
 			release(&bcache.lock);
+			acquiresleep(&b->lock);
 			return b;
 		}
 	}
@@ -123,7 +121,7 @@ bread(uint dev, uint blockno)
 void
 bwrite(struct buf *b)
 {
-	if ((b->flags & B_BUSY) == 0)
+	if (!holdingsleep(&b->lock))
 		panic("bwrite");
 	b->flags |= B_DIRTY;
 	iderw(b);
@@ -135,20 +133,23 @@ bwrite(struct buf *b)
 void
 brelse(struct buf *b)
 {
-	if ((b->flags & B_BUSY) == 0)
+	if (!holdingsleep(&b->lock))
 		panic("brelse");
 
+	releasesleep(&b->lock);
+
 	acquire(&bcache.lock);
-
-	b->next->prev = b->prev;
-	b->prev->next = b->next;
-	b->next = bcache.head.next;
-	b->prev = &bcache.head;
-	bcache.head.next->prev = b;
-	bcache.head.next = b;
-
-	b->flags &= ~B_BUSY;
-	wakeup(b);
+	b->refcnt--;
+	if (b->refcnt == 0)
+	{
+		// no one is waiting for it
+		b->next->prev = b->prev;
+		b->prev->next = b->next;
+		b->next = bcache.head.next;
+		b->prev = &bcache.head;
+		bcache.head.next->prev = b;
+		bcache.head.next = b;
+	}
 
 	release(&bcache.lock);
 }
