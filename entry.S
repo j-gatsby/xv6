@@ -63,7 +63,7 @@ entry:
 	# Jump to main(), and switch to executing at high addresses.
 	# The indirect call is needed because the assembler produces
 	# a PC-relative instruction for a direct jump.
-	movl $main, %eax
+	mov	$main, %eax
 	jmp *%eax
 
 .comm stack, KSTACKSIZE

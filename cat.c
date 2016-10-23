@@ -36,7 +36,7 @@ main(int argc, char *argv[])
 		exit();
 	}
 
-	for (i = 0; i < argc; i++)
+	for (i = 1; i < argc; i++)
 	{
 		if ((fd = open(argv[i], 0)) < 0)
 		{
