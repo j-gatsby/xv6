@@ -15,7 +15,7 @@
 #define ID			(0x0020/4)			// ID
 #define VER			(0x0030/4)			// Version
 #define TPR			(0x0080/4)			// Task Priority
-#define EOI			(0x0080/4)			// EOI
+#define EOI			(0x00B0/4)			// EOI
 #define SVR			(0x00F0/4)			// Spurious Interrupt Vector
 #define ENABLE		0x00000100			// Unit Enable
 #define ESR			(0x0280/4)			// Error Status
