@@ -6,6 +6,7 @@ struct pipe;
 struct proc;
 struct rtcdate;
 struct spinlock;
+struct sleeplock;
 struct stat;
 struct superblock;
 
