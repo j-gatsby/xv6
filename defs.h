@@ -127,6 +127,12 @@ void			release(struct spinlock*);
 void			pushcli(void);
 void			popcli(void);
 
+// sleeplock.c
+void			acquiresleep(struct sleeplock*);
+void			releasesleep(struct sleeplock*);
+int				holdingsleep(struct sleeplock*);
+void			initsleeplock(struct sleeplock*, char*);
+
 // string.c
 int				memcmp(const void*, const void*, uint);
 void*			memmove(void*, const void*, uint);
