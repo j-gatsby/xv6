@@ -13,12 +13,33 @@
 // library system call function. The saved user %esp points
 // to a saved program counter, and then then first argument.
 
+
+// The helper functions argint(), argptr(), argstr(), and argfd()
+// retrieve the n'th system call argument, as either an integer,
+// a pointer, a string, or a file descriptor.
+
+
 // Fetch the int at addr from the current process.
+// Read the value at that address from user memory
+// and write it to *ip.
 int
 fetchint(uint addr, int *ip)
 {
+	// Verify that the address lies within the user
+	// part of the address space.
+	// The kernel has set up the page-table hardware
+	// to make sure that the process cannot access memory
+	// outside it's local private memory: if a user program
+	// tries to read or write memory at an address >= p->sz,
+	// the processor will cause a segmentation trap, and trap()
+	// will kill the process. The kernel, however, can dereference
+	// any address that the user might have passed, so it must
+	// check explicitly that the address is below p->sz.
 	if (addr >= proc->sz || addr+4 > proc->sz)
 		return -1;
+	// We can simply cast the address to a pointer
+	// because the user and the kernel share the
+	// same page table
 	*ip = *(int*)(addr);
 		return 0;
 }
@@ -50,6 +71,11 @@ fetchstr(uint addr, char **pp)
 int
 argint(int n, int *ip)
 {
+	// Use the user-space %esp register to locate
+	// the nth argument.
+	// %esp points at the return address for the
+	// system call stub. The args are right above
+	// it at %esp+4. The nth arg is at %esp+4+4*n.
 	return fetchint(proc->tf->esp + 4 + 4*n, ip);
 }
 
@@ -62,9 +88,13 @@ argptr(int n, char **pp, int size)
 {
 	int i;
 
+	// The user stack pointer is checked during the
+	// fetching of the argument.
 	if (argint(n, &i) < 0)
 		return -1;
 
+	// Then the argument, which is also a user pointer,
+	// is checked.
 	if ((uint)i >= proc->sz || (uint)i + size > proc->sz)
 		return -1;
 
@@ -142,15 +172,23 @@ syscall(void)
 {
 	int num;
 
+	// Load the system call number from the trap frame,
+	// which contains the saved %eax
 	num = proc->tf->eax;
+	// Index into the system call tables
 	if (num > 0 && num < NELEM(syscalls) && syscalls[num])
 	{
+		// Record the return value of the system
+		// call function in %eax
 		proc->tf->eax = syscalls[num]();
 	}
+	// If the system call number is invalid...
 	else
 	{
+		// Print an error message
 		cprintf("%d %s: unknown sys call %d\n",
 				proc->pid, proc->name, num);
+		// Record a return value of -1 in %eax
 		proc->tf->eax = -1;
 	}
 }
