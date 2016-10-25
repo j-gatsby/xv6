@@ -38,7 +38,13 @@ main(void)
 	consoleinit();		// console hardware
 	uartinit();			// serial port
 	pinit();			// process table
+
+	// xv6 must set up the x86 hardware to do something sensible
+	// on encountering an int instruction, which causes the processor
+	// to generate a trap. The x86 allows for 256 different interrupts.
+	// Set up the 256 entries in the table idt.
 	tvinit();			// trap vectors
+
 	binit();			// buffer cache
 	fileinit();			// file table
 	ideinit();			// disk
