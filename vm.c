@@ -58,14 +58,14 @@ walkpgdir(pde_t *pgdir, const void *va, int alloc)
 	// Is the page directory entry present?
 	if (*pde & PTE_P)
 	{
-		pgtab = (pde_t*)P2V(PTE_ADDR(*pde));
+		pgtab = (pte_t*)P2V(PTE_ADDR(*pde));
 	}
 	// If not, then the required page table page
 	// has not yet been allocated.
 	else
 	{
 		// If the alloc argument is set, allocate it.
-		if (!alloc || (pgtab = (pde_t*)kalloc()) == 0)
+		if (!alloc || (pgtab = (pte_t*)kalloc()) == 0)
 			return 0;
 		// Make sure all of those PTE_P bits are zero
 		memset(pgtab, 0, PGSIZE);
