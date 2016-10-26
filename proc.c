@@ -48,6 +48,8 @@ allocproc(void)
 	for (p = ptable.proc; p < &ptable.proc[NPROC]; p++)
 		if (p->state == UNUSED)
 			goto found;
+
+	release(&ptable.lock);
 	// If none found, return 0 to signal failure
 	return 0;
 
@@ -198,8 +200,6 @@ fork(void)
 {
 	int i, pid;
 	struct proc *np;
-
-	acquire(&ptable.lock);
 
 	// Allocate process
 	if ((np = allocproc()) == 0)
