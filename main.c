@@ -47,7 +47,10 @@ main(void)
 
 	binit();			// buffer cache
 	fileinit();			// file table
-	ideinit();			// disk
+
+	// The kernel now initializes the disk driver
+	ideinit();
+
 	if(!ismp)
 		timerinit();	// uniprocessor timer
 	cprintf("\ncpu%d: starting startothers()\n\n", cpunum());
