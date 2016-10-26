@@ -47,7 +47,7 @@ static pte_t*
 walkpgdir(pde_t *pgdir, const void *va, int alloc)
 {
 	pde_t *pde;
-	pde_t *pgtab;
+	pte_t *pgtab;
 
 	// We mimic the actions of the x86 paging hardware
 	// as we look up the PTE for a virtual address by
