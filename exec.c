@@ -139,5 +139,6 @@ bad:
 		iunlockput(ip);
 		end_op();
 	}
+	cprintf("exec() failed");
 	return -1;
 }

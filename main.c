@@ -53,11 +53,9 @@ main(void)
 
 	if(!ismp)
 		timerinit();	// uniprocessor timer
-	cprintf("\ncpu%d: starting startothers()\n\n", cpunum());
 	startothers();		// start other processors
 
 	// main() can now use locks and memory above 4Mb.
-	cprintf("\ncpu%d: starting kinit2()\n\n", cpunum());
 
 	// Enable locking and arrange for more memory to be allocatable.
 	// The physical allocator refers to physical pages by their
@@ -65,12 +63,8 @@ main(void)
 	// physical addresses, so P2V is used to translate PHYSTOP
 	// (a physical address) to a virtual address.
 	kinit2(P2V(4*1024*1024), P2V(PHYSTOP));		// must come after startothers()
-	cprintf("\ncpu%d: starting userinit()\n\n", cpunum());
 	userinit();			// first user process
-	cprintf("userinit() completed. starting mpmain().\n");
 	mpmain();			// finish this processor's setup
-	cprintf("\ncpu%d: end of  main().\n\n", cpunum());
-
 }
 
 
@@ -92,9 +86,7 @@ mpmain(void)
 	cprintf("cpu%d: starting\n", cpunum());
 	idtinit();				// load idt register
 	xchg(&cpu->started, 1);	// tell startothers() we are up
-	cprintf("\ncpu%d: starting scheduler()\n\n", cpunum());
 	scheduler();			// start running processes
-	cprintf("\ncpu%d: exiting mpmain()\n\n", cpunum());
 }
 
 
@@ -134,7 +126,6 @@ startothers(void)
 		// Wait for cpu to finish mpmain()
 		while(c->started == 0)
 			;
-	cprintf("\ncpu%d: exiting startothers()\n\n", cpunum());
 
 	}
 }

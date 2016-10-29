@@ -11,7 +11,7 @@ strcpy(char *s, char *t)
 
 	os = s;
 
-	while ((*s++ - *t++) != 0)
+	while ((*s++ = *t++) != 0)
 		;
 
 	return os;
