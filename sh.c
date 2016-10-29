@@ -35,13 +35,13 @@ struct redircmd {
 struct pipecmd {
 	int type;
 	struct cmd *left;
-	struct cmd *right;;
+	struct cmd *right;
 };
 
 struct listcmd {
 	int type;
 	struct cmd *left;
-	struct cmd *right;;
+	struct cmd *right;
 };
 
 struct backcmd {
