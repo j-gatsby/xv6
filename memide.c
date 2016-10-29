@@ -54,7 +54,7 @@ iderw(struct buf *b)
 
 	if (b->flags & B_DIRTY)
 	{
-		b-> &= ~B_DIRTY;
+		b->flags &= ~B_DIRTY;
 		memmove(p, b->data, BSIZE);
 	}
 	else
