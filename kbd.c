@@ -26,7 +26,7 @@ kbdgetc(void)
 	{
 		// Key released
 		data = (shift & E0ESC ? data : data & 0x7F);
-		shift &= (shiftcode[data] | E0ESC);
+		shift &= ~(shiftcode[data] | E0ESC);
 		return 0;
 	}
 	else if (shift & E0ESC)
