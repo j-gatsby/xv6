@@ -254,7 +254,8 @@ exit(void)
 	int fd;
 
 	if (proc == initproc)
-		panic("init exiting");
+//		panic("init exiting");
+		panic("in exit(): proc == initproc");
 
 	// Close all open files
 	for (fd = 0; fd < NOFILE; fd++)

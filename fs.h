@@ -34,6 +34,11 @@ struct dinode {
 	uint addrs[NDIRECT+1];	// Data block address
 };
 
+#define T_DIR		1	// Directory
+#define T_FILE		2	// File
+#define T_DEV		3	// Special device
+#define T_SYMLINK	4	// Symlink
+
 // Inodes per block
 #define IPB			(BSIZE / sizeof(struct dinode))
 
