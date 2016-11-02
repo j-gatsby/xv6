@@ -482,6 +482,29 @@ forkret(void)
 }
 
 
+
+/**********************************************************
+					MULTIPLEXING
+**********************************************************/
+// xv6 multiplexes by switching each processor from one process
+// to another in two situations:
+// 1. xv6's sleep() and wakeup() mechanism switches when a process
+//		waits for device or pipe I/O to complete, or waits for a
+//		child to exit, or waits in the sleep() system call.
+// 2. xv6 periodically forces a switch when a process is executing
+//		user instructions.
+//
+// This multiplexing creates the illusion that each process has it's
+// own CPU, just as xv6 uses the memory allocator and hardware page
+// tables to create the illusion that each process has it's own memory.
+//
+// xv6 uses the standard mechanism of context switching to switch
+// from one process to another.
+//
+// xv6 uses the standard technique of using the timer interrupt handler
+// to drive context switches.
+
+
 // Atomically release lock and sleep on chan.
 // Reacquires lock when awakened.
 void
@@ -545,6 +568,11 @@ wakeup(void *chan)
 	wakeup1(chan);
 	release(&ptable.lock);
 }
+
+
+/**********************************************************/
+
+
 
 
 // Kill the process with the given pid.
