@@ -24,9 +24,33 @@ initlock(struct spinlock *lk, char *name)
 void
 acquire(struct spinlock *lk)
 {
+	// If interrupts are enabled, kernel code can be stopped at
+	// any moment to run an interrupt handler instead. This can
+	// cause a lock to never be released, and consequently, the
+	// processor, and eventually the whole system, will deadlock.
+	//
+	// To avoid this situation, if a lock is used by an interrupt
+	// handler, a processor must never hold that lock with
+	// interrupts enabled. xv6 is even more conservativ: it never
+	// holds any lock with interrupts enabled. It uses pushcli()
+	// and popcli() to manage a stack of 'disable interrupts'
+	// operations.
+	//
+	// pushcli() and popcli() are more than just wrappers around
+	// cli and sti (cli is the x86 instruction that disables
+	// interrupts): they are counted, so that it takes two calls
+	// to popcli() to undo two calls to pushcli. This way, if code
+	// holds two locks, interrupts will not be reenable until both
+	// locks have been released.
 	pushcli();		// disable interrupts to avoid deadlock
 	if (holding(lk))
 		panic("acquire");
+
+	// It is important that acquire() call pushcli() before the
+	// xchg that might acquire the lock. If the two were reversed,
+	// there would be a few instruction cycles when the lock was
+	// held with interrupts enabled, and an unfortunately timed
+	// interrupt would deadlock the system.
 
 	// The xchg is atomic
 	while (xchg(&lk->locked, 1) != 0)
@@ -69,6 +93,8 @@ release(struct spinlock *lk)
 	// TODO: A real OS would use C atomics here.
 	asm volatile("movl $0, %0" : "+m" (lk->locked) : );
 
+	// It is important that release() call popcli() only
+	// after the xchg that releases the lock.
 	popcli();
 }
 

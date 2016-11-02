@@ -317,7 +317,7 @@ sys_symlink(void)
 
 	if (argstr(0, &old) < 0 || argstr(1, &new) < 0)
 		return -1;
-	if ((ip = create(new, 0, T_SYMLINK, 0, 0)) == 0)
+	if ((ip = create(new, T_SYMLINK, 0, 0)) == 0)
 		return -1;
 	writei(ip, old, 0, strlen(old));
 	iunlockput(ip);

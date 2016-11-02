@@ -32,7 +32,6 @@ pinit(void)
 // If found, change state to EMBRYO and initialize
 // state required to run in the kernel.
 // Otherwise, return 0.
-// Must hold ptable.lock.
 static struct proc*
 allocproc(void)
 {
