@@ -170,7 +170,7 @@ cgaputc(int c)
 	if ((pos/80) >= 24)
 	{
 		// Scroll up
-		memmove(crt, crt+80, sizeof(crt[0]*23*80));
+		memmove(crt, crt+80, sizeof(crt[0])*23*80);
 		pos -= 80;
 		memset(crt+pos, 0, sizeof(crt[0])*(24*80 - pos));
 	}

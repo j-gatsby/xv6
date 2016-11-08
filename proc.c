@@ -476,6 +476,7 @@ forkret(void)
 		iinit(ROOTDEV);
 		initlog(ROOTDEV);
 	}
+
 	// Return to "caller", actually trapret()
 	// This is because allocproc() arranged that the
 	// top word on the stack after p->context is popped
